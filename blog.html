@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Blog - 건축사사무소밤" />
+    <title>Blog - 건축사사무소밤</title>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="site-header">
+            <div class="container header-inner">
+                <a href="/" class="logo">건축사사무소밤</a>
+                <nav class="desktop-nav">
+                    <a href="/projects.html">Projects</a>
+                    <a href="/blog.html" class="active">Blog</a>
+                    <a href="/contact.html">Contact</a>
+                </nav>
+                <button class="mobile-toggle" aria-label="Toggle Menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+
+
+            <!-- Blog List -->
+            <section id="blog" class="section">
+                <div class="container">
+                    <div class="search-bar fade-in-up" style="margin-bottom: 2rem;">
+                        <input type="text" id="search-input" placeholder="Search posts..."
+                            style="width: 100%; padding: 1rem; border: 1px solid var(--color-border); background: transparent; color: var(--color-text-main); font-family: inherit;">
+                    </div>
+                    <div class="blog-list" id="blog-list">
+                        <!-- Content will be injected by JS -->
+                        <div style="padding: 2rem; color: var(--color-text-muted);">Loading posts...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-col">
+                        <h3>건축사사무소밤</h3>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Contact</h4>
+                        <p>p.juhyung@daum.net</p>
+                        <p>010-5891-1031</p>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Social</h4>
+                        <a href="#">Instagram</a>
+                        <a href="#">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 건축사사무소밤. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script type="module">
+        import '/src/main.js';
+
+        let allPosts = [];
+
+        async function loadPosts() {
+            try {
+                const response = await fetch('/posts.json');
+                const posts = await response.json();
+
+                // Fetch content for each post to enable full-text search
+                allPosts = await Promise.all(posts.map(async (post) => {
+                    try {
+                        const mdRes = await fetch(`/posts/${post.filename}`);
+                        const text = await mdRes.text();
+                        // Clean frontmatter for search (remove lines with ::)
+                        const cleanText = text.split('\n').filter(line => !line.includes('::')).join(' ');
+                        return { ...post, content: cleanText };
+                    } catch (e) {
+                        console.warn(`Failed to load content for ${post.id}`, e);
+                        return { ...post, content: '' };
+                    }
+                }));
+
+                renderPosts(allPosts);
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('blog-list').innerHTML = '<div style="padding: 2rem; color: red;">Failed to load posts.</div>';
+            }
+        }
+
+        function renderPosts(posts, query = '') {
+            const listContainer = document.getElementById('blog-list');
+
+            if (!posts.length) {
+                listContainer.innerHTML = '<div style="padding: 2rem;">No posts found.</div>';
+                return;
+            }
+
+            listContainer.innerHTML = posts.map((post, index) => {
+                let snippet = 'Read more...';
+                let titleHtml = post.title;
+
+                if (query) {
+                    // Highlight Title
+                    if (post.title.toLowerCase().includes(query)) {
+                        const regex = new RegExp(`(${query})`, 'gi');
+                        titleHtml = post.title.replace(regex, '<mark class="search-highlight">$1</mark>');
+                    }
+
+                    // Find match in content and create snippet
+                    if (post.content) {
+                        const lowerContent = post.content.toLowerCase();
+                        const matchIndex = lowerContent.indexOf(query);
+
+                        if (matchIndex !== -1) {
+                            // Extract snippet around match
+                            const start = Math.max(0, matchIndex - 40);
+                            const end = Math.min(post.content.length, matchIndex + query.length + 60);
+                            let rawSnippet = post.content.substring(start, end);
+
+                            // Highlight in snippet
+                            const regex = new RegExp(`(${query})`, 'gi');
+                            snippet = '...' + rawSnippet.replace(regex, '<mark class="search-highlight">$1</mark>') + '...';
+                        }
+                    }
+                }
+
+                return `
+            <a href="/blog-post.html?id=${post.id}" class="blog-item fade-in-up" style="animation-delay: ${index * 0.1}s">
+                <span class="blog-date">${post.date}</span>
+                <div class="blog-content">
+                    <h3>${titleHtml}</h3>
+                    <p>${snippet}</p>
+                </div>
+            </a>
+          `;
+            }).join('');
+
+            // Trigger animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+        }
+
+        // Search Handler
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filteredPosts = allPosts.filter(post =>
+                post.title.toLowerCase().includes(query) ||
+                post.date.includes(query) ||
+                (post.content && post.content.toLowerCase().includes(query))
+            );
+            renderPosts(filteredPosts, query);
+        });
+
+        document.addEventListener('DOMContentLoaded', loadPosts);
+    </script>
+    <style>
+        .blog-list {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .blog-item {
+            display: flex;
+            align-items: baseline;
+            gap: 4rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            /* Reset link style */
+            color: inherit;
+            /* Reset link color */
+        }
+
+        .blog-item:hover {
+            opacity: 0.7;
+        }
+
+        .blog-date {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            min-width: 120px;
+        }
+
+        .blog-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .blog-content p {
+            color: var(--color-text-muted);
+            font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .blog-item {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .blog-content h3 {
+                font-size: 1.2rem;
+            }
+        }
+
+        .search-highlight {
+            background-color: rgba(255, 255, 0, 0.4);
+            color: #fff;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+    </style>
+</body>
+
+</html>
