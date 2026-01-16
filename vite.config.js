@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/', // Changed to root for custom domain (www.bam-architects.com)
+  base: '/bam-architect/', // Repository name
   build: {
     outDir: 'dist',
   }
