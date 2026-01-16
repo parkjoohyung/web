@@ -7,11 +7,11 @@ export default defineConfig(({ command }) => ({
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        projects: resolve(__dirname, 'projects.html'),
-        blog: resolve(__dirname, 'blog.html'),
-        blogPost: resolve(__dirname, 'blog-post.html'),
-        contact: resolve(__dirname, 'contact.html'),
+        main: resolve(process.cwd(), 'index.html'),
+        projects: resolve(process.cwd(), 'projects.html'),
+        blog: resolve(process.cwd(), 'blog.html'),
+        blogPost: resolve(process.cwd(), 'blog-post.html'),
+        contact: resolve(process.cwd(), 'contact.html'),
       },
     },
   }
