@@ -77,16 +77,20 @@
 
         async function loadPosts() {
             try {
-                const response = await fetch('/posts.json');
+                const response = await fetch('posts.json'); // Changed to relative path
                 const posts = await response.json();
 
                 // Fetch content for each post to enable full-text search
                 allPosts = await Promise.all(posts.map(async (post) => {
                     try {
-                        const mdRes = await fetch(`/posts/${post.filename}`);
+                        const mdRes = await fetch(`posts/${post.filename}`); // Changed to relative path
                         const text = await mdRes.text();
                         // Clean frontmatter for search (remove lines with ::)
-                        const cleanText = text.split('\n').filter(line => !line.includes('::')).join(' ');
+                        // Clean content: remove attributes and leading dashes
+                        const cleanText = text.split('\n')
+                            .filter(line => !line.includes('::'))
+                            .map(line => line.replace(/^\s*-\s?/, ''))
+                            .join(' ');
                         return { ...post, content: cleanText };
                     } catch (e) {
                         console.warn(`Failed to load content for ${post.id}`, e);

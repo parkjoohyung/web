@@ -88,7 +88,7 @@
 
             try {
                 // 1. Get index to find filename
-                const indexRes = await fetch('/posts.json');
+                const indexRes = await fetch('posts.json'); // Changed to relative path
                 const posts = await indexRes.json();
                 const postMeta = posts.find(p => p.id === postId);
 
@@ -111,14 +111,16 @@
                 metaDesc.content = `${postMeta.title} - ${postMeta.date}`;
 
                 // 3. Load Markdown
-                const mdRes = await fetch(`/posts/${postMeta.filename}`);
+                const mdRes = await fetch(`posts/${postMeta.filename}`); // Changed to relative path
                 if (!mdRes.ok) throw new Error('Markdown file not found');
                 const mdText = await mdRes.text();
 
-                // 4. Remove Frontmatter (simple version: remove lines with '::')
-                // Logseq attributes usually look like "key:: value"
+                // 4. Clean Content
+                // - Remove Logseq attributes (lines with '::')
+                // - Remove leading dashes from Outliner format (e.g. "- ## Title" -> "## Title")
                 const cleanMd = mdText.split('\n')
                     .filter(line => !line.includes('::'))
+                    .map(line => line.replace(/^\s*-\s?/, '')) // Remove leading dash and optional space
                     .join('\n');
 
                 // 5. Render

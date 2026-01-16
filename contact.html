@@ -58,16 +58,16 @@
                         <div class="contact-form-wrap fade-in-up" style="animation-delay: 0.2s;">
                             <form class="contact-form" onsubmit="event.preventDefault();">
                                 <div class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" id="name" name="name" placeholder="성함 / 회사명">
+                                    <label for="name">Name *</label>
+                                    <input type="text" id="name" name="name" placeholder="성함 / 회사명" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="email">E-mail</label>
                                     <input type="email" id="email" name="email" placeholder="이메일 주소">
                                 </div>
                                 <div class="form-group">
-                                    <label for="phone">Phone</label>
-                                    <input type="tel" id="phone" name="phone" placeholder="연락처">
+                                    <label for="phone">Phone *</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="연락처" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="attachment">Reference Link</label>
@@ -75,8 +75,9 @@
                                         placeholder="파일 다운로드 링크 (Google Drive, Dropbox 등)">
                                 </div>
                                 <div class="form-group">
-                                    <label for="message">Message</label>
-                                    <textarea id="message" name="message" rows="6" placeholder="문의 내용"></textarea>
+                                    <label for="message">Message *</label>
+                                    <textarea id="message" name="message" rows="6" placeholder="문의 내용"
+                                        required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Send Message</button>
                             </form>

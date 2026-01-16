@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const message = document.getElementById('message').value;
 
       // 유효성 검사
-      if (!name || !email || !message) {
-        alert('이름, 이메일, 내용은 필수 항목입니다.');
+      if (!name || !phone || !message) {
+        alert('필수 항목(이름, 연락처, 내용)을 입력해주세요.');
         return;
       }
 
